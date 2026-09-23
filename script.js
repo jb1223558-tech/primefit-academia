@@ -20,3 +20,31 @@ nav.querySelectorAll('a').forEach((link) => link.addEventListener('click', () =>
 
 const observer = new IntersectionObserver((entries) => entries.forEach((entry) => { if (entry.isIntersecting) entry.target.classList.add('shown'); }), { threshold: .12 });
 document.querySelectorAll('.intro, .structure-head, .services, .plans-head, .plan-card, .quote, .contact').forEach((el) => { el.classList.add('reveal'); observer.observe(el); });
+
+// Manual navigation keeps both banners readable without unexpected movement.
+const carousel = document.querySelector('.hero-carousel');
+if (carousel) {
+  const slides = [...carousel.querySelectorAll('.hero-slide')];
+  const selectors = [...carousel.querySelectorAll('[data-slide]')];
+  let currentSlide = 0;
+  const showSlide = (index) => {
+    currentSlide = (index + slides.length) % slides.length;
+    slides.forEach((slide, i) => {
+      slide.hidden = i !== currentSlide;
+      slide.classList.toggle('is-active', i === currentSlide);
+    });
+    selectors.forEach((button, i) => {
+      button.classList.toggle('is-active', i === currentSlide);
+      button.setAttribute('aria-pressed', String(i === currentSlide));
+    });
+    document.querySelector('#slide-count').textContent = `0${currentSlide + 1} / 0${slides.length}`;
+  };
+  selectors.forEach((button) => button.addEventListener('click', () => showSlide(Number(button.dataset.slide))));
+  carousel.querySelectorAll('[data-direction]').forEach((button) => button.addEventListener('click', () => showSlide(currentSlide + Number(button.dataset.direction))));
+  carousel.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+      event.preventDefault();
+      showSlide(currentSlide + (event.key === 'ArrowRight' ? 1 : -1));
+    }
+  });
+}
